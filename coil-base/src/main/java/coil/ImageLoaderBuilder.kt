@@ -14,6 +14,7 @@ import coil.bitmappool.BitmapPool
 import coil.drawable.CrossfadeDrawable
 import coil.memory.BitmapReferenceCounter
 import coil.memory.MemoryCache
+import coil.memory.WeakMemoryCache
 import coil.request.Request
 import coil.size.Precision
 import coil.transition.CrossfadeTransition
@@ -252,8 +253,9 @@ class ImageLoaderBuilder(context: Context) {
         val memoryCacheSize = (availableMemorySize - bitmapPoolSize).toInt()
 
         val bitmapPool = BitmapPool(bitmapPoolSize)
-        val referenceCounter = BitmapReferenceCounter(bitmapPool)
-        val memoryCache = MemoryCache(referenceCounter, memoryCacheSize)
+        val weakMemoryCache = WeakMemoryCache()
+        val referenceCounter = BitmapReferenceCounter(weakMemoryCache, bitmapPool)
+        val memoryCache = MemoryCache(weakMemoryCache, referenceCounter, memoryCacheSize)
 
         return RealImageLoader(
             context = applicationContext,
@@ -261,6 +263,7 @@ class ImageLoaderBuilder(context: Context) {
             bitmapPool = bitmapPool,
             referenceCounter = referenceCounter,
             memoryCache = memoryCache,
+            weakMemoryCache = weakMemoryCache,
             callFactory = callFactory ?: buildDefaultCallFactory(),
             registry = registry ?: ComponentRegistry()
         )
